@@ -1,7 +1,7 @@
 export const C=Object.freeze({
   api:'https://api.openpoiapi.com',
   radius:1000,
-  circle:500,
+  circle:1000,
   circleModes:[500,1000,0],
   maxDistance:1200,
   cacheMs:86400000,
