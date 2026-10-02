@@ -23,6 +23,11 @@ const state={
 let map=null;
 let timer;
 
+const initialProgress=getProgress(state.base);
+state.found=initialProgress.found;
+state.discoveries=initialProgress.discoveries;
+state.memo=initialProgress.memo;
+
 document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>start());
 renderBadgeBook();
 
@@ -144,7 +149,6 @@ function select(id){
   state.selected=id;
   const p=state.items.find(x=>x.id===id);
   if(!p)return;
-  map?.focus(p);
   if(!state.found.has(id)){
     state.discoveries=markFound(p);
     state.found=new Set(Object.keys(state.discoveries));
