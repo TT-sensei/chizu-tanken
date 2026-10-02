@@ -6,7 +6,15 @@ function placeKey(base){
 
 function read(base){
   try{
-    return JSON.parse(localStorage.getItem(prefix+placeKey(base)))||{found:[],memo:''};
+    const raw=localStorage.getItem(prefix+placeKey(base));
+    if(raw)return JSON.parse(raw);
+
+    // 旧バージョンの記録があれば、最初の場所の記録として引き継ぐ。
+    const oldFound=JSON.parse(localStorage.getItem('chizu-tanken:found')||'[]');
+    const oldMemo=JSON.parse(localStorage.getItem('chizu-tanken:memo')||'null');
+    if(oldFound.length||oldMemo)return{found:oldFound,memo:String(oldMemo||'')};
+
+    return{found:[],memo:''};
   }catch{
     return{found:[],memo:''};
   }
