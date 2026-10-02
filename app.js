@@ -151,7 +151,7 @@ function showQuiz(){
     return;
   }
 
-  e.innerHTML=`<small>問題 ${state.qi+1} / ${state.questions.length}</small><p class="question">${esc(q.question)}</p><div class="choices"></div>`;
+  e.innerHTML=`<small>問題 ${state.qi+1} / ${state.questions.length}</small><p class="question">${esc(q.question)}</p><div class="quizHint">地図を動かしたり、拡大したりしながら探してみよう。</div><div class="choices"></div>`;
   const c=e.querySelector('.choices');
 
   for(const x of q.choices){
