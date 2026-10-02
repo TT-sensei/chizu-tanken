@@ -66,6 +66,11 @@ header p{margin:0;color:#45635b}
 .controls button{padding:0}
 .reset{position:absolute;right:12px;bottom:12px;background:white;color:#0b6b57;border:2px solid #0b6b57}
 .mapExpand{position:absolute;right:12px;top:12px;background:white;color:#0b6b57;border:2px solid #0b6b57}
+.mapTools{display:flex;align-items:center;gap:8px;padding:8px 10px 4px;border-top:1px solid #e5efec}
+.mapTools>span{font-size:.78rem;font-weight:900;color:#58716a}
+.circleMode{display:flex;gap:5px}
+.circleMode button{min-height:34px;padding:.3rem .65rem;border:2px solid #cfe0db;background:white;color:#45635b;font-size:.78rem}
+.circleMode button.on{background:#e3f0ec;border-color:#0b6b57;color:#0b6b57}
 .legend{margin:0;padding:8px 10px;font-size:.82rem;line-height:1.5;color:#536b64}
 
 aside{padding:12px;overflow:auto}
