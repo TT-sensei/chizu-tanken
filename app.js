@@ -101,9 +101,9 @@ function renderList(v){
     const d=document.createElement('div');
     d.className='facility'+(state.selected===p.id?' selected':'')+(state.found.has(p.id)?' found-item':'');
 
-    const b=document.createElement('button');
+    const b=document.createElement('div');
+    b.className='facilityTarget';
     b.innerHTML=`<span><b>${esc(p.name)}</b><small>${esc(p.group)}・約${p.distance}m・${esc(p.direction)}</small></span><span class="facilityIcon">${esc(p.icon)}</span>`;
-    b.onclick=()=>selectFromList(p.id);
 
     const f=document.createElement('div');
     f.className='found'+(state.found.has(p.id)?' isFound':'');
@@ -132,30 +132,9 @@ function renderFilters(){
   }
 }
 
-function renderBadges(){
-  const badges=badgeState(state.items,state.found);
-  const unlocked=badges.filter(x=>x.unlocked).length;
-  $('#badgeCount').textContent=`${unlocked} / ${badges.length}`;
-
-  const e=$('#badges');
-  e.replaceChildren();
-
-  for(const b of badges){
-    const d=document.createElement('div');
-    d.className='badge '+(b.unlocked?'unlocked':'locked');
-    d.innerHTML=`<img class="badgeImage" src="${esc(b.image)}" alt="${esc(b.title)}"><div><b>${esc(b.title)}</b><small>${esc(b.description)}</small></div>`;
-    e.append(d);
-  }
-}
-
 function renderAttributions(){
   const a=[...new Set(state.items.flatMap(x=>x.attributions))].slice(0,5);
   $('#attr').textContent=a.length?'施設データ出典：'+a.join(' ／ '):'';
-}
-
-function selectFromList(id){
-  state.selected=id;
-  render();
 }
 
 function select(id){
