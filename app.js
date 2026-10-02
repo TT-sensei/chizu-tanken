@@ -1,5 +1,7 @@
 import{C}from'./config.js';
 import{store}from'./state/store.js';
+import{getProgress,setFound,setMemo}from'./state/progress.js';
+import{badgeState}from'./badges/badges.js';
 import{suggestions,places,nearby,clearCache}from'./data/poi-service.js';
 import{MapView}from'./ui/map.js';
 
@@ -10,14 +12,16 @@ const state={
   items:[],
   filter:'すべて',
   selected:null,
-  found:new Set(store.get('found',[])),
+  found:new Set(),
+  memo:'',
   facilitiesOpen:true,
   mapExpanded:false
 };
 
 let map=null;
+let timer;
 
-document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>start(b.dataset.start));
+document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>start());
 
 $('#home').onclick=()=>{
   $('#app').classList.remove('active');
@@ -32,17 +36,21 @@ function start(){
   load();
 }
 
-
 async function load(){
-  status('施設を調べています…');
+  const p=getProgress(state.base);
+  state.found=p.found;
+  state.memo=p.memo;
+  state.selected=null;
+  $('#memo').value=state.memo;
   $('#baseName').textContent=state.base.name;
+  status('施設を調べています…');
+
   try{
     const r=await nearby(state.base);
     state.items=r.items;
-    state.selected=null;
-    status(`${r.items.length}件見つかりました${r.cached?'（保存データ）':''}`);
+    status(\`\${r.items.length}件の施設が見つかりました\${r.cached?'（保存データ）':''}\`);
     render();
-    }catch(e){
+  }catch(e){
     console.error(e);
     state.items=[];
     status('施設の情報を取得できませんでした。もう一度試してみよう。');
@@ -51,7 +59,11 @@ async function load(){
 }
 
 function visibleForMap(v){
-  const sorted=[...v].sort((a,b)=>a.distance-b.distance);
+  const sorted=[...v].sort((a,b)=>{
+    const ap=a.mapSymbol&&!['other','park','shop','local'].includes(a.mapSymbol)?0:1;
+    const bp=b.mapSymbol&&!['other','park','shop','local'].includes(b.mapSymbol)?0:1;
+    return ap-bp||a.distance-b.distance;
+  });
   const chosen=sorted.slice(0,C.allMapMarkerLimit);
   if(state.selected){
     const selected=state.items.find(x=>x.id===state.selected);
@@ -62,9 +74,20 @@ function visibleForMap(v){
 
 function render(){
   const v=state.items.filter(x=>state.filter==='すべて'||x.group===state.filter);
-  map?.set(state.base,visibleForMap(v),{showLabels:false});
-  $('#count').textContent=v.length+'件';
 
+  map?.set(state.base,visibleForMap(v),{showLabels:false});
+
+  const foundCount=state.items.filter(x=>state.found.has(x.id)).length;
+  $('#count').textContent=state.items.length+'件';
+  $('#foundCount').textContent=\`見つけた \${foundCount} / \${state.items.length}\`;
+
+  renderBadges();
+  renderFilters();
+  renderList(v);
+  renderAttributions();
+}
+
+function renderList(v){
   const l=$('#list');
   l.replaceChildren();
 
@@ -76,17 +99,20 @@ function render(){
 
   for(const p of ordered){
     const d=document.createElement('div');
-    d.className='facility'+(state.selected===p.id?' selected':'');
+    d.className='facility'+(state.selected===p.id?' selected':'')+(state.found.has(p.id)?' found-item':'');
+
     const b=document.createElement('button');
-    b.innerHTML=`<span><b>${esc(p.name)}</b><small>${p.group}・約${p.distance}m・${p.direction}</small></span><span>${p.icon}</span>`;
+    b.innerHTML=\`<span><b>\${esc(p.name)}</b><small>\${esc(p.group)}・約\${p.distance}m・\${esc(p.direction)}</small></span><span class="facilityIcon">\${esc(p.icon)}</span>\`;
     b.onclick=()=>select(p.id);
 
     const f=document.createElement('label');
     f.className='found';
-    f.innerHTML=`<input type="checkbox" ${state.found.has(p.id)?'checked':''}>見つけた！`;
+    f.innerHTML=\`<input type="checkbox" \${state.found.has(p.id)?'checked':''}>見つけた！\`;
     f.querySelector('input').onchange=()=>{
-      state.found.has(p.id)?state.found.delete(p.id):state.found.add(p.id);
-      store.set('found',[...state.found]);
+      if(f.querySelector('input').checked)state.found.add(p.id);
+      else state.found.delete(p.id);
+      setFound(state.base,state.found);
+      render();
     };
 
     d.append(b,f);
@@ -94,13 +120,9 @@ function render(){
   }
 
   if(!v.length)l.innerHTML='<p>表示できる施設がありません。</p>';
-  filters();
-
-  const a=[...new Set(state.items.flatMap(x=>x.attributions))].slice(0,5);
-  $('#attr').textContent=a.length?'施設データ出典：'+a.join(' ／ '):'';
 }
 
-function filters(){
+function renderFilters(){
   const e=$('#filters');
   e.replaceChildren();
   for(const g of C.groups){
@@ -109,10 +131,32 @@ function filters(){
     b.className=state.filter===g?'on':'';
     b.onclick=()=>{
       state.filter=g;
+      state.selected=null;
       render();
     };
     e.append(b);
   }
+}
+
+function renderBadges(){
+  const badges=badgeState(state.items,state.found);
+  const unlocked=badges.filter(x=>x.unlocked).length;
+  $('#badgeCount').textContent=\`\${unlocked} / \${badges.length}\`;
+
+  const e=$('#badges');
+  e.replaceChildren();
+
+  for(const b of badges){
+    const d=document.createElement('div');
+    d.className='badge '+(b.unlocked?'unlocked':'locked');
+    d.innerHTML=\`<div class="badgeMark">\${b.unlocked?'✓':'○'}</div><div><b>\${esc(b.title)}</b><small>\${esc(b.description)}</small></div>\`;
+    e.append(d);
+  }
+}
+
+function renderAttributions(){
+  const a=[...new Set(state.items.flatMap(x=>x.attributions))].slice(0,5);
+  $('#attr').textContent=a.length?'施設データ出典：'+a.join(' ／ '):'';
 }
 
 function select(id){
@@ -122,7 +166,6 @@ function select(id){
   render();
 }
 
-let timer;
 $('#q').oninput=()=>{
   clearTimeout(timer);
   timer=setTimeout(async()=>{
@@ -130,22 +173,29 @@ $('#q').oninput=()=>{
   },350);
 };
 
-$('#search').onclick=async()=>{
+$('#search').onclick=searchPlace;
+$('#q').onkeydown=e=>{
+  if(e.key==='Enter')searchPlace();
+};
+
+async function searchPlace(){
   const q=$('#q').value.trim();
   if(!q)return;
+
   status('場所を探しています…');
   try{
-    const x=await places(q,state.base);
-    showSuggestions(x);
-    status(x.length?'候補を選んでください':'候補が見つかりませんでした');
+    const xs=await places(q,state.base);
+    showSuggestions(xs);
+    status(xs.length?'候補から場所を選んでください':'候補が見つかりませんでした');
   }catch{
     status('場所を検索できませんでした。もう一度試してみよう。');
   }
-};
+}
 
 function showSuggestions(xs){
   const e=$('#suggest');
   e.replaceChildren();
+
   for(const x of xs){
     const b=document.createElement('button');
     b.textContent=x.name+(x.address?'｜'+x.address:'');
@@ -162,7 +212,7 @@ function showSuggestions(xs){
 
 document.querySelectorAll('#quick button').forEach(b=>b.onclick=()=>{
   $('#q').value=b.textContent;
-  $('#search').click();
+  searchPlace();
 });
 
 $('#reload').onclick=()=>{
@@ -173,10 +223,7 @@ $('#reload').onclick=()=>{
 $('#reset').onclick=()=>map?.reset();
 
 document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{
-  const actions={
-    zin:()=>map?.zoom(1),
-    zout:()=>map?.zoom(-1)
-  };
+  const actions={zin:()=>map?.zoom(1),zout:()=>map?.zoom(-1)};
   actions[b.dataset.m]?.();
 });
 
@@ -195,6 +242,11 @@ $('#facilityToggle').onclick=()=>{
   $('#facilityBody').hidden=!state.facilitiesOpen;
 };
 
+$('#memo').oninput=e=>{
+  state.memo=e.target.value;
+  setMemo(state.base,state.memo);
+};
+
 function closeMapExpanded(){
   state.mapExpanded=false;
   $('.layout').classList.remove('map-expanded');
@@ -202,10 +254,8 @@ function closeMapExpanded(){
   $('#mapExpand').textContent='地図をひろげる';
 }
 
-$('#memo').value=store.get('memo','');
-$('#memo').oninput=e=>store.set('memo',e.target.value);
-
 function status(x){$('#status').textContent=x}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-filters();
+renderBadges();
+renderFilters();
