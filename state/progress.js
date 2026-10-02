@@ -1,40 +1,62 @@
-const prefix='chizu-tanken:progress:';
+const placePrefix='chizu-tanken:progress:';
+const discoveryKey='chizu-tanken:discoveries';
 
 function placeKey(base){
-  return `${base.latitude.toFixed(5)}:${base.longitude.toFixed(5)}`;
+  return placePrefix+base.latitude.toFixed(5)+':'+base.longitude.toFixed(5);
 }
 
-function read(base){
+function readPlace(base){
   try{
-    const raw=localStorage.getItem(prefix+placeKey(base));
-    if(raw)return JSON.parse(raw);
-
-    // 旧バージョンの記録があれば、最初の場所の記録として引き継ぐ。
-    const oldFound=JSON.parse(localStorage.getItem('chizu-tanken:found')||'[]');
-    const oldMemo=JSON.parse(localStorage.getItem('chizu-tanken:memo')||'null');
-    if(oldFound.length||oldMemo)return{found:oldFound,memo:String(oldMemo||'')};
-
-    return{found:[],memo:''};
+    return JSON.parse(localStorage.getItem(placeKey(base)))||{memo:''};
   }catch{
-    return{found:[],memo:''};
+    return{memo:''};
   }
 }
 
-function write(base,value){
-  try{localStorage.setItem(prefix+placeKey(base),JSON.stringify(value))}catch{}
+function readDiscoveries(){
+  try{
+    const data=JSON.parse(localStorage.getItem(discoveryKey));
+    return data&&typeof data==='object'?data:{};
+  }catch{
+    return{};
+  }
+}
+
+function writePlace(base,value){
+  try{localStorage.setItem(placeKey(base),JSON.stringify(value))}catch{}
+}
+
+function writeDiscoveries(value){
+  try{localStorage.setItem(discoveryKey,JSON.stringify(value))}catch{}
 }
 
 export function getProgress(base){
-  const p=read(base);
-  return{found:new Set(p.found||[]),memo:String(p.memo||'')};
+  const discoveries=readDiscoveries();
+  return{
+    found:new Set(Object.keys(discoveries)),
+    discoveries,
+    memo:String(readPlace(base).memo||'')
+  };
 }
 
-export function setFound(base,found){
-  const p=read(base);
-  write(base,{...p,found:[...found]});
+export function markFound(item){
+  if(!item?.id)return readDiscoveries();
+  const discoveries=readDiscoveries();
+
+  if(!discoveries[item.id]){
+    discoveries[item.id]={
+      name:String(item.name||''),
+      group:String(item.group||'その他'),
+      latitude:Number(item.latitude),
+      longitude:Number(item.longitude)
+    };
+    writeDiscoveries(discoveries);
+  }
+
+  return discoveries;
 }
 
 export function setMemo(base,memo){
-  const p=read(base);
-  write(base,{...p,memo});
+  const place=readPlace(base);
+  writePlace(base,{...place,memo});
 }
