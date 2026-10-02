@@ -21,7 +21,7 @@
   <div class="hero">
     <p class="eyebrow">3年生 社会科</p>
     <h2>地図をひらいて、<br>地域を探検しよう</h2>
-    <p class="heroLead">学校や駅、公園などの場所を決めて、地図記号や周りの施設を見つけてみよう。</p>
+    <p class="heroLead">場所を検索したり、地図から基準地点を決めたりして、地図記号や周りの施設を見つけてみよう。</p>
     <button class="startButton" data-start>探検をはじめる</button>
     <section class="badgeBook">
       <div class="badgeBookHead">
@@ -51,7 +51,9 @@
     <div class="searchRow">
       <input id="q" placeholder="学校、駅、公園など" autocomplete="off">
       <button id="search">検索</button>
+      <button id="pickBase" class="sub">地図から決める</button>
     </div>
+    <div id="pickStatus" class="pickStatus" hidden>地図をタップして、基準地点を決めよう。</div>
     <div id="suggest" class="suggest"></div>
     <nav id="quick" aria-label="場所の例">
       <button>学校</button>
@@ -75,6 +77,7 @@
       <div id="map">
         <div id="tiles"></div>
         <svg id="marks" aria-label="地図上の施設"></svg>
+        <div id="pickHint" class="pickHint" hidden>地図をタップして、基準地点を決めよう</div>
         <div class="compass">北<br>↑</div>
         <div class="controls">
           <button data-m="zin" aria-label="拡大">＋</button>
@@ -91,7 +94,7 @@
           <button data-circle="0">なし</button>
         </div>
       </div>
-      <p class="legend">地図の記号を見つけて、気になる場所をタップしてみよう。　● 基準地点　※距離は学校からのまっすぐなきょりです。</p>
+      <p class="legend">地図の記号を見つけて、気になる場所をタップしてみよう。　● 基準地点　※距離は基準地点からのまっすぐなきょりです。</p>
     </section>
 
     <aside>
