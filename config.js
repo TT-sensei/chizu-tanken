@@ -1,0 +1,1 @@
+export const C=Object.freeze({api:'https://api.openpoiapi.com',radius:1000,circle:500,maxDistance:1200,closestGap:50,orderGap:40,boundary:8,cacheMs:86400000,dedupe:25,zoom:16,place:{name:'茨城大学教育学部附属小学校',latitude:36.3744278,longitude:140.4794},groups:['すべて','公共施設','くらし','健康・福祉','教育','地域','その他'],tile:(z,x,y)=>`https://cyberjapandata.gsi.go.jp/xyz/std/${z}/${x}/${y}.png`});
