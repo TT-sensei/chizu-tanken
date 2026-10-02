@@ -79,15 +79,19 @@ aside{padding:12px;overflow:auto}
 .found{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:.9rem;font-weight:700}
 .found input{width:24px;height:24px}
 
-.badgePanel{margin-top:16px;padding-top:12px;border-top:2px solid #e5efec}
-.badgePanel h3{margin:0 0 7px}
-#badges{display:grid;gap:6px}
-.badge{display:flex;align-items:center;gap:10px;border-radius:10px;padding:7px 8px}
+.badgePanel{margin:12px 0 10px;padding:10px 0 2px;border-top:2px solid #e5efec;border-bottom:2px solid #e5efec}
+.sectionLabel{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.sectionLabel h3{margin:0;font-size:.95rem}
+.sectionLabel span{font-size:.72rem;color:#7a8e88}
+#badges{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px}
+.badge{flex:0 0 112px;display:grid;justify-items:center;gap:3px;border-radius:10px;padding:7px 5px;text-align:center}
 .badge.unlocked{background:#fff7dc}
 .badge.locked{background:#f3f6f5;color:#8a9b96}
-.badgeMark{display:grid;place-items:center;width:32px;height:32px;border:2px solid currentColor;border-radius:50%;font-weight:900;flex:0 0 auto}
-.badge small{display:block;margin-top:1px}
-
+.badgeImage{width:58px;height:58px;object-fit:contain;flex:0 0 auto}
+.badge.locked .badgeImage{filter:grayscale(1);opacity:.3}
+.badge.unlocked .badgeImage{opacity:1}
+.badge b{display:block;font-size:.75rem;line-height:1.25}
+.badge small{display:block;margin-top:1px;font-size:.65rem;line-height:1.25}
 .memo{display:grid;gap:5px;margin-top:16px;font-weight:900}
 .memo textarea{border:2px solid #78978e;border-radius:9px;padding:8px;line-height:1.6;resize:vertical}
 
