@@ -73,10 +73,9 @@ export const BADGES=[
   }
 ];
 
-export function badgeState(items,found){
-  const relevant=items.filter(x=>found.has(x.id));
+export function badgeState(discoveries){
+  const relevant=Object.values(discoveries||{});
   const groups=new Set(relevant.map(x=>x.group).filter(Boolean));
-  const total=items.length;
   const foundCount=relevant.length;
-  return BADGES.map(b=>({...b,unlocked:b.condition({foundCount,groupCount:[...groups].filter(x=>x!=='その他').length,groups,total})}));
+  return BADGES.map(b=>({...b,unlocked:b.condition({foundCount,groupCount:[...groups].filter(x=>x!=='その他').length,groups})}));
 }
