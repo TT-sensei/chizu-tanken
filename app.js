@@ -1,7 +1,7 @@
 import{C}from'./config.js';
 import{store}from'./state/store.js';
 import{getProgress,setFound,setMemo}from'./state/progress.js';
-import{badgeState}from'./badges/badges.js';
+import{BADGES,badgeState}from'./badges/badges.js';
 import{suggestions,places,nearby,clearCache}from'./data/poi-service.js';
 import{MapView}from'./ui/map.js';
 
@@ -22,6 +22,7 @@ let map=null;
 let timer;
 
 document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>start());
+renderBadgeBook();
 
 $('#home').onclick=()=>{
   $('#app').classList.remove('active');
@@ -80,7 +81,7 @@ function render(){
   const foundCount=state.items.filter(x=>state.found.has(x.id)).length;
   $('#foundCount').textContent=`見つけた ${foundCount} / ${state.items.length}`;
 
-  renderBadges();
+  renderBadgeBook();
   renderFilters();
   renderList(v);
   renderAttributions();
@@ -102,17 +103,11 @@ function renderList(v){
 
     const b=document.createElement('button');
     b.innerHTML=`<span><b>${esc(p.name)}</b><small>${esc(p.group)}・約${p.distance}m・${esc(p.direction)}</small></span><span class="facilityIcon">${esc(p.icon)}</span>`;
-    b.onclick=()=>select(p.id);
+    b.onclick=()=>selectFromList(p.id);
 
-    const f=document.createElement('label');
-    f.className='found';
-    f.innerHTML=`<input type="checkbox" ${state.found.has(p.id)?'checked':''}>見つけた！`;
-    f.querySelector('input').onchange=()=>{
-      if(f.querySelector('input').checked)state.found.add(p.id);
-      else state.found.delete(p.id);
-      setFound(state.base,state.found);
-      render();
-    };
+    const f=document.createElement('div');
+    f.className='found'+(state.found.has(p.id)?' isFound':'');
+    f.textContent=state.found.has(p.id)?'✓ 地図で発見':'地図で見つけよう';
 
     d.append(b,f);
     l.append(d);
@@ -158,11 +153,34 @@ function renderAttributions(){
   $('#attr').textContent=a.length?'施設データ出典：'+a.join(' ／ '):'';
 }
 
+function selectFromList(id){
+  state.selected=id;
+  render();
+}
+
 function select(id){
   state.selected=id;
   const p=state.items.find(x=>x.id===id);
-  if(p)map?.focus(p);
+  if(!p)return;
+  map?.focus(p);
+  if(!state.found.has(id)){
+    state.found.add(id);
+    setFound(state.base,state.found);
+  }
   render();
+}
+
+function renderBadgeBook(){
+  const e=$('#badgeBook');
+  if(!e)return;
+  e.replaceChildren();
+  const badges=state.items.length?badgeState(state.items,state.found):BADGES.map(x=>({...x,unlocked:false}));
+  for(const b of badges){
+    const d=document.createElement('div');
+    d.className='bookBadge '+(b.unlocked?'unlocked':'locked');
+    d.innerHTML=`<img src="${esc(b.image)}" alt="${esc(b.title)}"><span>${esc(b.title)}</span>`;
+    e.append(d);
+  }
 }
 
 $('#q').oninput=()=>{
