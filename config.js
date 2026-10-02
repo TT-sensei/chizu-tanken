@@ -16,5 +16,5 @@ export const C=Object.freeze({
   dragThreshold:3,
   place:{name:'茨城大学教育学部附属小学校',latitude:36.3744278,longitude:140.4794},
   groups:['すべて','公共施設','くらし','健康・福祉','教育','地域','その他'],
-  tile:(z,x,y)=>`https://cyberjapandata.gsi.go.jp/xyz/std/${z}/${x}/${y}.png`
+  tile:(z,x,y)=>`https://cyberjapandata.gsi.go.jp/xyz/pale/${z}/${x}/${y}.png`
 });
