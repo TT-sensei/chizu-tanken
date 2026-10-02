@@ -83,7 +83,15 @@
         <button id="reset" class="reset">基準地点にもどる</button>
         <button id="mapExpand" class="mapExpand" aria-expanded="false">地図をひろげる</button>
       </div>
-      <p class="legend">地図の記号を見つけて、気になる場所をタップしてみよう。　● 基準地点　―― 500m　※距離は学校からのまっすぐなきょりです。</p>
+      <div class="mapTools">
+        <span>範囲</span>
+        <div id="circleMode" class="circleMode" role="group" aria-label="地図の範囲">
+          <button data-circle="500" class="on">500m</button>
+          <button data-circle="1000">1km</button>
+          <button data-circle="0">なし</button>
+        </div>
+      </div>
+      <p class="legend">地図の記号を見つけて、気になる場所をタップしてみよう。　● 基準地点　※距離は学校からのまっすぐなきょりです。</p>
     </section>
 
     <aside>
