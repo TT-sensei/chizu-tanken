@@ -4,9 +4,9 @@ export class MapView{
   constructor(el,select){
     this.el=el;this.tiles=el.querySelector('#tiles');this.svg=el.querySelector('#marks');
     this.z=C.zoom;this.base=C.place;this.center=C.place;this.items=[];this.select=select;this.circleRadius=C.circle;
-    this.drag=null;this.pointers=new Map();this.pinch=null;this.showLabels=false;
+    this.drag=null;this.pointers=new Map();this.pinch=null;this.showLabels=false;this.pickMode=false;this.onPick=null;
     el.onpointerdown=e=>{
-      if(e.target.closest?.('button,.mark'))return;
+      if(e.target.closest?.('button,.compass') || (!this.pickMode&&e.target.closest?.('.mark')))return;
       this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
       el.setPointerCapture?.(e.pointerId);
       if(this.pointers.size===2){
@@ -14,7 +14,7 @@ export class MapView{
         this.pinch={distance:Math.hypot(a.x-b.x,a.y-b.y)};
         this.drag=null;el.classList.remove('dragging');return;
       }
-      this.drag={x:e.clientX,y:e.clientY};el.classList.add('dragging');
+      this.drag={x:e.clientX,y:e.clientY,moved:false};el.classList.add('dragging');
     };
     el.onpointermove=e=>{
       if(!this.pointers.has(e.pointerId))return;
@@ -30,16 +30,33 @@ export class MapView{
       if(!this.drag)return;
       const dx=this.drag.x-e.clientX,dy=this.drag.y-e.clientY;
       if(Math.abs(dx)+Math.abs(dy)<C.dragThreshold)return;
+      this.drag.moved=true;
       this.pan(dx,dy);this.drag.x=e.clientX;this.drag.y=e.clientY;
     };
-    const end=e=>{
+    const end=(e,shouldPick=true)=>{
+      const drag=this.drag;
       this.pointers.delete(e.pointerId);
       try{el.releasePointerCapture?.(e.pointerId)}catch{}
       if(this.pointers.size<2)this.pinch=null;
-      if(!this.pointers.size){this.drag=null;el.classList.remove('dragging');}
+      if(!this.pointers.size){
+        if(shouldPick&&this.pickMode&&drag&&!drag.moved)this.pickAt(e.clientX,e.clientY);
+        this.drag=null;el.classList.remove('dragging');
+      }
     };
-    el.onpointerup=end;el.onpointercancel=end;
+    el.onpointerup=e=>end(e,true);el.onpointercancel=e=>end(e,false);
     new ResizeObserver(()=>this.draw()).observe(el);
+  }
+
+  setPickMode(enabled,onPick){
+    this.pickMode=!!enabled;
+    this.onPick=enabled?onPick:null;
+    this.el.classList.toggle('pick-mode',this.pickMode);
+    this.draw();
+  }
+  pickAt(clientX,clientY){
+    const rect=this.el.getBoundingClientRect(),w=this.el.clientWidth,h=this.el.clientHeight;
+    const c=world(this.center.latitude,this.center.longitude,this.z);
+    return this.onPick?.(unworld(c.x-w/2+(clientX-rect.left),c.y-h/2+(clientY-rect.top),this.z));
   }
 
   set(base,items,options={}){
