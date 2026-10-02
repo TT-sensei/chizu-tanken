@@ -12,7 +12,7 @@ export const C=Object.freeze({
   minZoom:5,
   maxZoom:18,
   mapMarkerLimit:24,
-  allMapMarkerLimit:18,
+  allMapMarkerLimit:60,
   dragThreshold:3,
   place:{name:'茨城大学教育学部附属小学校',latitude:36.3744278,longitude:140.4794},
   groups:['すべて','公共施設','くらし','健康・福祉','教育','地域','その他'],
