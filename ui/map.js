@@ -47,7 +47,6 @@ export class MapView{
     this.base=base;this.items=items;this.showLabels=!!options.showLabels;this.circleRadius=Number.isFinite(options.circle)?options.circle:C.circle;this.draw();
   }
   reset(){this.center=this.base;this.z=C.zoom;this.draw()}
-  focus(p){this.center=p;this.draw()}
   zoom(d){this.z=Math.max(C.minZoom,Math.min(C.maxZoom,this.z+d));this.draw()}
   zoomAt(x,y,d){
     const old=this.z,next=Math.max(C.minZoom,Math.min(C.maxZoom,old+d));if(next===old)return;
