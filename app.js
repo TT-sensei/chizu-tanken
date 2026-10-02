@@ -25,25 +25,13 @@ $('#home').onclick=()=>{
   closeMapExpanded();
 };
 
-function start(m){
+function start(){
   $('#top').classList.remove('active');
   $('#app').classList.add('active');
   if(!map)map=new MapView($('#map'),select);
-  mode(m);
   load();
 }
 
-function mode(m){
-  state.mode=m;
-  $('#explore').hidden=m==='quiz';
-  $('#quiz').hidden=m!=='quiz';
-  $('#switch').textContent=m==='quiz'?'地図で探す':'地図からクイズ';
-  if(m==='quiz'&&state.items.length)beginQuiz();
-}
-
-$('#switch').onclick=()=>{
-  load();
-};
 
 async function load(){
   status('施設を調べています…');
