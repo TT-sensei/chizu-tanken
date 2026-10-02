@@ -70,26 +70,50 @@ export class MapView{
     this.svg.replaceChildren();
     const pos=p=>{const q=world(p.latitude,p.longitude,this.z);return{x:q.x-x0,y:q.y-y0}};
     const b=pos(this.base),mpp=156543.03392*Math.cos(this.base.latitude*Math.PI/180)/2**this.z;
-    this.circle(b,C.circle/mpp);this.mark(b,'◎','#d43c32',null,20,true,'基準地点');
+    this.circle(b,C.circle/mpp);this.mark(b,'base','#d43c32',null,20,true,'基準地点');
     for(const p of this.items){
       const q=pos(p);
-      if(q.x>-40&&q.x<w+40&&q.y>-40&&q.y<h+40)this.mark(q,p.mapSymbol||p.icon,'#0b6b57',p.id,p.selected?19:15,!!p.selected,p.label);
+      if(q.x>-40&&q.x<w+40&&q.y>-40&&q.y<h+40)this.mark(q,p.mapSymbol||'other','#0b6b57',p.id,p.selected?19:15,!!p.selected,p.label);
     }
   }
   circle(p,r){
     const e=document.createElementNS('http://www.w3.org/2000/svg','circle');
     for(const[k,v]of Object.entries({cx:p.x,cy:p.y,r,fill:'#20a47d22',stroke:'#0b6b57','stroke-width':3,'stroke-dasharray':'7 5'}))e.setAttribute(k,v);this.svg.append(e);
   }
-  mark(p,text,color,id,size,selected=false,label=''){
-    const n='http://www.w3.org/2000/svg',g=document.createElementNS(n,'g');g.classList.add('mark');g.setAttribute('transform',`translate(${p.x} ${p.y})`);
-    const c=document.createElementNS(n,'circle');
-    for(const[k,v]of Object.entries({r:size,fill:selected?'#fff8df':'white',stroke:color,'stroke-width':selected?5:3}))c.setAttribute(k,v);
-    const t=document.createElementNS(n,'text');t.textContent=text;t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');t.setAttribute('font-weight','900');t.setAttribute('font-size',selected?'1.05em':'1em');
-    g.append(c,t);
+  mark(p,symbol,color,id,size,selected=false,label=''){
+    const n='http://www.w3.org/2000/svg',g=document.createElementNS(n,'g');
+    g.classList.add('mark');g.setAttribute('transform',`translate(${p.x} ${p.y})`);
+    const ring=document.createElementNS(n,'circle');
+    for(const[k,v]of Object.entries({r:size+3,fill:selected?'#fff8df':'white',stroke:selected?'#d9961a':color,'stroke-width':selected?4:2}))ring.setAttribute(k,v);
+    g.append(ring);
+    this.symbol(g,symbol,color,selected);
     if(this.showLabels&&label){
-      const bg=document.createElementNS(n,'rect');bg.setAttribute('x',size+5);bg.setAttribute('y',-13);bg.setAttribute('rx',7);bg.setAttribute('width',Math.min(170,Math.max(70,label.length*14)));bg.setAttribute('height',26);bg.setAttribute('fill','white');bg.setAttribute('stroke','#78978e');
-      const lt=document.createElementNS(n,'text');lt.textContent=label;lt.setAttribute('x',size+12);lt.setAttribute('y',5);lt.setAttribute('font-size','12');lt.setAttribute('font-weight','800');lt.setAttribute('fill','#183a32');g.append(bg,lt);
+      const bg=document.createElementNS(n,'rect');
+      bg.setAttribute('x',size+10);bg.setAttribute('y',-13);bg.setAttribute('rx',7);
+      bg.setAttribute('width',Math.min(170,Math.max(70,label.length*14)));bg.setAttribute('height',26);
+      bg.setAttribute('fill','white');bg.setAttribute('stroke','#78978e');
+      const lt=document.createElementNS(n,'text');lt.textContent=label;lt.setAttribute('x',size+17);lt.setAttribute('y',5);
+      lt.setAttribute('font-size','12');lt.setAttribute('font-weight','800');lt.setAttribute('fill','#183a32');g.append(bg,lt);
     }
-    if(id)g.onclick=()=>this.select(id);this.svg.append(g);
+    if(id)g.onclick=()=>this.select(id);
+    this.svg.append(g);
+  }
+
+  symbol(g,type,color,selected){
+    const n='http://www.w3.org/2000/svg',ink=selected?'#d9961a':color;
+    if(type==='base'){const t=document.createElementNS(n,'text');t.textContent='◎';t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');t.setAttribute('font-size','24');t.setAttribute('font-weight','900');t.setAttribute('fill',ink);g.append(t);return}
+    const t=document.createElementNS(n,'text');t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');t.setAttribute('font-weight','900');t.setAttribute('font-size','17');t.setAttribute('fill',ink);
+    const labels={post:'〒',school:'文',hospital:'✚',library:'図',office:'役',station:'駅',shrine:'⛩',temple:'卍',park:'P',pharmacy:'薬',university:'大',shop:'店',other:'・'};
+    if(type==='police'||type==='koban'||type==='fire'){
+      const a=document.createElementNS(n,'line'),b=document.createElementNS(n,'line');
+      for(const line of [a,b]){line.setAttribute('x1',-7);line.setAttribute('y1',-7);line.setAttribute('x2',7);line.setAttribute('y2',7);line.setAttribute('stroke',ink);line.setAttribute('stroke-width',2.5);line.setAttribute('stroke-linecap','round')}
+      if(type==='koban'){a.setAttribute('x1',-7);a.setAttribute('y1',7);a.setAttribute('x2',7);a.setAttribute('y2',-7)}
+      if(type==='police'){
+        const c=document.createElementNS(n,'circle');c.setAttribute('r',10);c.setAttribute('fill','none');c.setAttribute('stroke',ink);c.setAttribute('stroke-width',2);g.append(c);
+      }
+      if(type==='fire'){a.setAttribute('y1',-8);a.setAttribute('y2',8);b.setAttribute('y1',-8);b.setAttribute('y2',8)}
+      g.append(a,b);return;
+    }
+    t.textContent=labels[type]||'・';g.append(t);
   }
 }
