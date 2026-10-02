@@ -84,9 +84,9 @@ export class MapView{
     const n='http://www.w3.org/2000/svg',g=document.createElementNS(n,'g');
     g.classList.add('mark');g.setAttribute('transform',`translate(${p.x} ${p.y})`);
     const ring=document.createElementNS(n,'circle');
-    for(const[k,v]of Object.entries({r:size+3,fill:selected?'#fff8df':'white',stroke:selected?'#d9961a':color,'stroke-width':selected?4:2}))ring.setAttribute(k,v);
+    for(const[k,v]of Object.entries({r:size+5,fill:selected?'#fff8df66':'transparent',stroke:selected?'#d9961a':'#0b6b5755','stroke-width':selected?4:2}))ring.setAttribute(k,v);
     g.append(ring);
-    this.symbol(g,symbol,color,selected);
+    if(!this.hasGsiSymbol(symbol))this.symbol(g,symbol,color,selected);
     if(this.showLabels&&label){
       const bg=document.createElementNS(n,'rect');
       bg.setAttribute('x',size+10);bg.setAttribute('y',-13);bg.setAttribute('rx',7);
@@ -97,6 +97,10 @@ export class MapView{
     }
     if(id)g.onclick=()=>this.select(id);
     this.svg.append(g);
+  }
+
+  hasGsiSymbol(type){
+    return ['post','koban','police','fire','library','office','school','hospital','station','shrine','temple'].includes(type);
   }
 
   symbol(g,type,color,selected){
