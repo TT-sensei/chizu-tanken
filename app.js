@@ -1,7 +1,6 @@
 import{C}from'./config.js';
 import{store}from'./state/store.js';
 import{suggestions,places,nearby,clearCache}from'./data/poi-service.js';
-import{generate}from'./quiz/generator.js';
 import{MapView}from'./ui/map.js';
 
 const $=s=>document.querySelector(s);
@@ -12,9 +11,6 @@ const state={
   filter:'すべて',
   selected:null,
   found:new Set(store.get('found',[])),
-  mode:'explore',
-  questions:[],
-  qi:0,
   facilitiesOpen:true,
   mapExpanded:false
 };
@@ -46,9 +42,7 @@ function mode(m){
 }
 
 $('#switch').onclick=()=>{
-  const m=state.mode==='quiz'?'explore':'quiz';
-  mode(m);
-  if(m==='quiz'&&!state.items.length)load();
+  load();
 };
 
 async function load(){
@@ -60,8 +54,7 @@ async function load(){
     state.selected=null;
     status(`${r.items.length}件見つかりました${r.cached?'（保存データ）':''}`);
     render();
-    if(state.mode==='quiz')beginQuiz();
-  }catch(e){
+    }catch(e){
     console.error(e);
     state.items=[];
     status('施設の情報を取得できませんでした。もう一度試してみよう。');
@@ -70,9 +63,8 @@ async function load(){
 }
 
 function visibleForMap(v){
-  const limit=state.filter==='すべて'?C.allMapMarkerLimit:C.mapMarkerLimit;
   const sorted=[...v].sort((a,b)=>a.distance-b.distance);
-  const chosen=sorted.slice(0,limit);
+  const chosen=sorted.slice(0,C.allMapMarkerLimit);
   if(state.selected){
     const selected=state.items.find(x=>x.id===state.selected);
     if(selected&&!chosen.some(x=>x.id===selected.id))chosen.push(selected);
@@ -80,26 +72,21 @@ function visibleForMap(v){
   return chosen.map(x=>({...x,selected:x.id===state.selected}));
 }
 
-function quizMapItems(q){
-  if(!q)return[];
-  const ids=new Set(q.optionIds||q.evidence);
-  return state.items.filter(x=>ids.has(x.id)).map(x=>({...x,label:x.name,selected:x.id===state.selected}));
-}
-
 function render(){
   const v=state.items.filter(x=>state.filter==='すべて'||x.group===state.filter);
-  const q=state.mode==='quiz'?state.questions[state.qi]:null;
-  if(state.mode==='quiz'){
-    map?.set(state.base,quizMapItems(q),{showLabels:true});
-  }else{
-    map?.set(state.base,visibleForMap(v),{showLabels:false});
-  }
+  map?.set(state.base,visibleForMap(v),{showLabels:false});
   $('#count').textContent=v.length+'件';
 
   const l=$('#list');
   l.replaceChildren();
 
-  for(const p of v){
+  const ordered=[...v].sort((a,b)=>{
+    if(state.selected===a.id)return -1;
+    if(state.selected===b.id)return 1;
+    return a.distance-b.distance;
+  });
+
+  for(const p of ordered){
     const d=document.createElement('div');
     d.className='facility'+(state.selected===p.id?' selected':'');
     const b=document.createElement('button');
@@ -145,54 +132,6 @@ function select(id){
   const p=state.items.find(x=>x.id===id);
   if(p)map?.focus(p);
   render();
-}
-
-function beginQuiz(){
-  state.questions=generate(state.items);
-  state.qi=0;
-  showQuiz();
-}
-
-function showQuiz(){
-  const e=$('#quizView'),q=state.questions[state.qi];
-  e.replaceChildren();
-
-  if(!q){
-    e.innerHTML='<p>安全に作れる問題がありません。別の場所を選ぶか、施設を読み直してみよう。</p>';
-    return;
-  }
-
-  e.innerHTML=`<small>問題 ${state.qi+1} / ${state.questions.length}</small><p class="question">${esc(q.question)}</p><div class="quizHint">地図を動かしたり、拡大したりしながら探してみよう。</div><div class="choices"></div>`;
-  const c=e.querySelector('.choices');
-
-  for(const x of q.choices){
-    const b=document.createElement('button');
-    b.textContent=x;
-    b.onclick=()=>{
-      [...c.children].forEach(y=>y.disabled=true);
-      const ok=x===q.answer;
-      const f=document.createElement('div');
-      f.className='feedback '+(ok?'ok':'');
-      f.innerHTML=`<b>${ok?'正解！':'地図でもう一度確かめよう。'}</b><p>${esc(q.explanation)}</p><p>地図でも確認してみよう。</p>`;
-
-      const n=document.createElement('button');
-      n.textContent=state.qi+1<state.questions.length?'次の問題':'最初から';
-      n.onclick=()=>{state.qi=(state.qi+1)%state.questions.length;showQuiz()};
-      f.append(n);
-      e.append(f);
-
-      const p=state.items.find(y=>y.id===q.evidence[0]);
-      if(p){
-        state.selected=p.id;
-        map?.focus(p);
-      }
-
-      const h=store.get('history',[]);
-      h.push({at:new Date().toISOString(),ok});
-      store.set('history',h.slice(-50));
-    };
-    c.append(b);
-  }
 }
 
 let timer;
