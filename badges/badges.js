@@ -1,8 +1,34 @@
+const BASE='https://tt-sensei.github.io/edu-assets/assets/web/badges/social/';
+
 export const BADGES=[
-  {id:'first',title:'はじめての探検',condition:p=>p.foundCount>=3,description:'3か所の施設を見つけた'},
-  {id:'finder',title:'地図さがし名人',condition:p=>p.foundCount>=10,description:'10か所の施設を見つけた'},
-  {id:'variety',title:'まちを見わたす',condition:p=>p.groupCount>=5,description:'5種類の施設を見つけた'},
-  {id:'all',title:'地域探検マスター',condition:p=>p.total>0&&p.foundCount>=p.total,description:'表示された施設をすべて見つけた'}
+  {
+    id:'first',
+    title:'はじめての探検',
+    description:'3か所の施設を見つけた',
+    image:`${BASE}find-features/badge.webp`,
+    condition:p=>p.foundCount>=3
+  },
+  {
+    id:'finder',
+    title:'地図さがし名人',
+    description:'10か所の施設を見つけた',
+    image:`${BASE}map-reader/badge.webp`,
+    condition:p=>p.foundCount>=10
+  },
+  {
+    id:'variety',
+    title:'まちを見わたす',
+    description:'5種類の施設を見つけた',
+    image:`${BASE}local-explorer/badge.webp`,
+    condition:p=>p.groupCount>=5
+  },
+  {
+    id:'all',
+    title:'地域探検マスター',
+    description:'表示された施設をすべて見つけた',
+    image:`${BASE}spatial-pattern/badge.webp`,
+    condition:p=>p.total>0&&p.foundCount>=p.total
+  }
 ];
 
 export function badgeState(items,found){
