@@ -73,20 +73,20 @@ export class MapView{
     this.circle(b,C.circle/mpp);this.mark(b,'base','#d43c32',null,20,true,'基準地点');
     for(const p of this.items){
       const q=pos(p);
-      if(q.x>-40&&q.x<w+40&&q.y>-40&&q.y<h+40)this.mark(q,p.mapSymbol||'other','#0b6b57',p.id,p.selected?19:15,!!p.selected,p.label);
+      if(q.x>-40&&q.x<w+40&&q.y>-40&&q.y<h+40)this.mark(q,p.mapSymbol||'other','#0b6b57',p.id,p.selected?19:15,!!p.selected,p.label,p.hasMapSymbol);
     }
   }
   circle(p,r){
     const e=document.createElementNS('http://www.w3.org/2000/svg','circle');
     for(const[k,v]of Object.entries({cx:p.x,cy:p.y,r,fill:'#20a47d22',stroke:'#0b6b57','stroke-width':3,'stroke-dasharray':'7 5'}))e.setAttribute(k,v);this.svg.append(e);
   }
-  mark(p,symbol,color,id,size,selected=false,label=''){
+  mark(p,symbol,color,id,size,selected=false,label='',hasGsiSymbol=false){
     const n='http://www.w3.org/2000/svg',g=document.createElementNS(n,'g');
     g.classList.add('mark');g.setAttribute('transform',`translate(${p.x} ${p.y})`);
     const ring=document.createElementNS(n,'circle');
     for(const[k,v]of Object.entries({r:size+5,fill:selected?'#fff8df66':'transparent',stroke:selected?'#d9961a':'#0b6b5755','stroke-width':selected?4:2}))ring.setAttribute(k,v);
     g.append(ring);
-    if(!this.hasGsiSymbol(symbol))this.symbol(g,symbol,color,selected);
+    if(!hasGsiSymbol)this.symbol(g,symbol,color,selected);
     if(this.showLabels&&label){
       const bg=document.createElementNS(n,'rect');
       bg.setAttribute('x',size+10);bg.setAttribute('y',-13);bg.setAttribute('rx',7);
@@ -99,9 +99,6 @@ export class MapView{
     this.svg.append(g);
   }
 
-  hasGsiSymbol(type){
-    return ['post','koban','police','fire','library','office','school','hospital','station','shrine','temple'].includes(type);
-  }
 
   symbol(g,type,color,selected){
     const n='http://www.w3.org/2000/svg',ink=selected?'#d9961a':color;
