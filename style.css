@@ -85,7 +85,7 @@ aside{padding:12px;overflow:auto}
 .facility{border:2px solid #cfe0db;border-radius:11px;padding:8px}
 .facility.selected{border-color:#e0a21b;background:#fff8df}
 .facility.found-item{border-left-color:#0b6b57}
-.facility>button{display:flex;justify-content:space-between;align-items:center;width:100%;background:white;color:#173e35;text-align:left;padding:3px}
+.facilityTarget{display:flex;justify-content:space-between;align-items:center;width:100%;color:#173e35;text-align:left;padding:3px}
 .facility>button b{display:block}
 .facility small{display:block;margin-top:2px;color:#5c746d}
 .facilityIcon{font-size:.95rem;color:#79928b}
