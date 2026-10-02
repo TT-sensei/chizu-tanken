@@ -1,0 +1,1 @@
+const P='chizu-tanken:';export const store={get(k,d=null){try{let v=localStorage.getItem(P+k);return v===null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem(P+k,JSON.stringify(v))}catch{}}};
