@@ -78,7 +78,6 @@ function render(){
   map?.set(state.base,visibleForMap(v),{showLabels:false});
 
   const foundCount=state.items.filter(x=>state.found.has(x.id)).length;
-  $('#count').textContent=state.items.length+'件';
   $('#foundCount').textContent=`見つけた ${foundCount} / ${state.items.length}`;
 
   renderBadges();
