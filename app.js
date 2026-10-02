@@ -80,9 +80,20 @@ function visibleForMap(v){
   return chosen.map(x=>({...x,selected:x.id===state.selected}));
 }
 
+function quizMapItems(q){
+  if(!q)return[];
+  const ids=new Set(q.optionIds||q.evidence);
+  return state.items.filter(x=>ids.has(x.id)).map(x=>({...x,label:x.name,selected:x.id===state.selected}));
+}
+
 function render(){
   const v=state.items.filter(x=>state.filter==='すべて'||x.group===state.filter);
-  map?.set(state.base,visibleForMap(v));
+  const q=state.mode==='quiz'?state.questions[state.qi]:null;
+  if(state.mode==='quiz'){
+    map?.set(state.base,quizMapItems(q),{showLabels:true});
+  }else{
+    map?.set(state.base,visibleForMap(v),{showLabels:false});
+  }
   $('#count').textContent=v.length+'件';
 
   const l=$('#list');
