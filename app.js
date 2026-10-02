@@ -1,6 +1,6 @@
 import{C}from'./config.js';
 import{store}from'./state/store.js';
-import{getProgress,setFound,setMemo}from'./state/progress.js';
+import{getProgress,markFound,setMemo}from'./state/progress.js';
 import{BADGES,badgeState}from'./badges/badges.js';
 import{suggestions,places,nearby,clearCache}from'./data/poi-service.js';
 import{MapView}from'./ui/map.js';
@@ -14,6 +14,7 @@ const state={
   selected:null,
   circle:1000,
   found:new Set(),
+  discoveries:{},
   memo:'',
   facilitiesOpen:true,
   mapExpanded:false
@@ -41,6 +42,7 @@ function start(){
 async function load(){
   const p=getProgress(state.base);
   state.found=p.found;
+  state.discoveries=p.discoveries;
   state.memo=p.memo;
   state.selected=null;
   $('#memo').value=state.memo;
@@ -80,7 +82,7 @@ function render(){
   map?.set(state.base,visibleForMap(v),{showLabels:false,circle:state.circle});
 
   const foundCount=state.items.filter(x=>state.found.has(x.id)).length;
-  $('#foundCount').textContent=`見つけた ${foundCount} / ${state.items.length}`;
+  $('#foundCount').textContent=`この地図で発見 ${foundCount} / ${state.items.length}`;
 
   renderBadgeBook();
   renderFilters();
@@ -144,8 +146,8 @@ function select(id){
   if(!p)return;
   map?.focus(p);
   if(!state.found.has(id)){
-    state.found.add(id);
-    setFound(state.base,state.found);
+    state.discoveries=markFound(p);
+    state.found=new Set(Object.keys(state.discoveries));
   }
   render();
 }
@@ -154,7 +156,7 @@ function renderBadgeBook(){
   const e=$('#badgeBook');
   if(!e)return;
   e.replaceChildren();
-  const badges=state.items.length?badgeState(state.items,state.found):BADGES.map(x=>({...x,unlocked:false}));
+  const badges=badgeState(state.discoveries);
   for(const b of badges){
     const d=document.createElement('div');
     d.className='bookBadge '+(b.unlocked?'unlocked':'locked');
