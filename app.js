@@ -17,7 +17,8 @@ const state={
   discoveries:{},
   memo:'',
   facilitiesOpen:true,
-  mapExpanded:false
+  mapExpanded:false,
+  basePicking:false
 };
 
 let map=null;
@@ -34,6 +35,9 @@ renderBadgeBook();
 $('#home').onclick=()=>{
   $('#app').classList.remove('active');
   $('#top').classList.add('active');
+  state.basePicking=false;
+  map?.setPickMode(false,null);
+  updateBasePickUI();
   closeMapExpanded();
 };
 
@@ -111,7 +115,7 @@ function renderList(v){
 
     const b=document.createElement('div');
     b.className='facilityTarget';
-    b.innerHTML=`<span><b>${esc(p.name)}</b><small>${esc(p.group)}・約${p.distance}m・${esc(p.direction)}</small></span><span class="facilityIcon">${esc(p.icon)}</span>`;
+    b.innerHTML=`<b>${esc(p.name)}</b><small>${esc(p.group)}・約${p.distance}m・${esc(p.direction)}</small>`;
 
     const f=document.createElement('div');
     f.className='found'+(state.found.has(p.id)?' isFound':'');
@@ -177,6 +181,7 @@ $('#q').oninput=()=>{
 };
 
 $('#search').onclick=searchPlace;
+$('#pickBase').onclick=toggleBasePick;
 $('#q').onkeydown=e=>{
   if(e.key==='Enter')searchPlace();
 };
@@ -203,6 +208,9 @@ function showSuggestions(xs){
     const b=document.createElement('button');
     b.textContent=x.name+(x.address?'｜'+x.address:'');
     b.onclick=()=>{
+      state.basePicking=false;
+      map?.setPickMode(false,null);
+      updateBasePickUI();
       state.base={name:x.name,latitude:Number(x.lat),longitude:Number(x.lng)};
       store.set('place',state.base);
       e.replaceChildren();
@@ -256,6 +264,36 @@ $('#memo').oninput=e=>{
   setMemo(state.base,state.memo);
 };
 
+function toggleBasePick(){
+  if(!map)return;
+  state.basePicking=!state.basePicking;
+  map.setPickMode(state.basePicking,onBasePick);
+  updateBasePickUI();
+  if(state.basePicking)$('#map').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function onBasePick(pos){
+  state.base={
+    name:'地図で決めた場所',
+    latitude:Number(pos.latitude),
+    longitude:Number(pos.longitude)
+  };
+  store.set('place',state.base);
+  state.basePicking=false;
+  map?.setPickMode(false,null);
+  updateBasePickUI();
+  load();
+}
+
+function updateBasePickUI(){
+  const b=$('#pickBase'),s=$('#pickStatus'),h=$('#pickHint');
+  if(!b)return;
+  b.classList.toggle('on',state.basePicking);
+  b.textContent=state.basePicking?'地図で指定中':'地図から決める';
+  s.hidden=!state.basePicking;
+  h.hidden=!state.basePicking;
+}
+
 function closeMapExpanded(){
   state.mapExpanded=false;
   $('.layout').classList.remove('map-expanded');
@@ -266,5 +304,5 @@ function closeMapExpanded(){
 function status(x){$('#status').textContent=x}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-renderBadges();
+renderBadgeBook();
 renderFilters();
