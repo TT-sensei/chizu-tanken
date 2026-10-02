@@ -48,7 +48,7 @@ async function load(){
   try{
     const r=await nearby(state.base);
     state.items=r.items;
-    status(\`\${r.items.length}件の施設が見つかりました\${r.cached?'（保存データ）':''}\`);
+    status(`${r.items.length}件の施設が見つかりました${r.cached?'（保存データ）':''}`);
     render();
   }catch(e){
     console.error(e);
@@ -79,7 +79,7 @@ function render(){
 
   const foundCount=state.items.filter(x=>state.found.has(x.id)).length;
   $('#count').textContent=state.items.length+'件';
-  $('#foundCount').textContent=\`見つけた \${foundCount} / \${state.items.length}\`;
+  $('#foundCount').textContent=`見つけた ${foundCount} / ${state.items.length}`;
 
   renderBadges();
   renderFilters();
@@ -102,12 +102,12 @@ function renderList(v){
     d.className='facility'+(state.selected===p.id?' selected':'')+(state.found.has(p.id)?' found-item':'');
 
     const b=document.createElement('button');
-    b.innerHTML=\`<span><b>\${esc(p.name)}</b><small>\${esc(p.group)}・約\${p.distance}m・\${esc(p.direction)}</small></span><span class="facilityIcon">\${esc(p.icon)}</span>\`;
+    b.innerHTML=`<span><b>${esc(p.name)}</b><small>${esc(p.group)}・約${p.distance}m・${esc(p.direction)}</small></span><span class="facilityIcon">${esc(p.icon)}</span>`;
     b.onclick=()=>select(p.id);
 
     const f=document.createElement('label');
     f.className='found';
-    f.innerHTML=\`<input type="checkbox" \${state.found.has(p.id)?'checked':''}>見つけた！\`;
+    f.innerHTML=`<input type="checkbox" ${state.found.has(p.id)?'checked':''}>見つけた！`;
     f.querySelector('input').onchange=()=>{
       if(f.querySelector('input').checked)state.found.add(p.id);
       else state.found.delete(p.id);
@@ -141,7 +141,7 @@ function renderFilters(){
 function renderBadges(){
   const badges=badgeState(state.items,state.found);
   const unlocked=badges.filter(x=>x.unlocked).length;
-  $('#badgeCount').textContent=\`\${unlocked} / \${badges.length}\`;
+  $('#badgeCount').textContent=`${unlocked} / ${badges.length}`;
 
   const e=$('#badges');
   e.replaceChildren();
@@ -149,7 +149,7 @@ function renderBadges(){
   for(const b of badges){
     const d=document.createElement('div');
     d.className='badge '+(b.unlocked?'unlocked':'locked');
-    d.innerHTML=\`<div class="badgeMark">\${b.unlocked?'✓':'○'}</div><div><b>\${esc(b.title)}</b><small>\${esc(b.description)}</small></div>\`;
+    d.innerHTML=`<img class="badgeImage" src="${esc(b.image)}" alt="${esc(b.title)}"><div><b>${esc(b.title)}</b><small>${esc(b.description)}</small></div>`;
     e.append(d);
   }
 }
