@@ -3,7 +3,7 @@ import{C}from'../config.js';import{world,unworld}from'../geo/geo.js';
 export class MapView{
   constructor(el,select){
     this.el=el;this.tiles=el.querySelector('#tiles');this.svg=el.querySelector('#marks');
-    this.z=C.zoom;this.base=C.place;this.center=C.place;this.items=[];this.select=select;
+    this.z=C.zoom;this.base=C.place;this.center=C.place;this.items=[];this.select=select;this.circleRadius=C.circle;
     this.drag=null;this.pointers=new Map();this.pinch=null;this.showLabels=false;
     el.onpointerdown=e=>{
       if(e.target.closest?.('button,.mark'))return;
@@ -44,7 +44,7 @@ export class MapView{
 
   set(base,items,options={}){
     if(base.latitude!==this.base.latitude||base.longitude!==this.base.longitude){this.center=base;this.z=C.zoom;}
-    this.base=base;this.items=items;this.showLabels=!!options.showLabels;this.draw();
+    this.base=base;this.items=items;this.showLabels=!!options.showLabels;this.circleRadius=Number.isFinite(options.circle)?options.circle:C.circle;this.draw();
   }
   reset(){this.center=this.base;this.z=C.zoom;this.draw()}
   focus(p){this.center=p;this.draw()}
@@ -70,7 +70,8 @@ export class MapView{
     this.svg.replaceChildren();
     const pos=p=>{const q=world(p.latitude,p.longitude,this.z);return{x:q.x-x0,y:q.y-y0}};
     const b=pos(this.base),mpp=156543.03392*Math.cos(this.base.latitude*Math.PI/180)/2**this.z;
-    this.circle(b,C.circle/mpp);this.mark(b,'base','#d43c32',null,20,true,'基準地点');
+    if(this.circleRadius>0)this.circle(b,this.circleRadius/mpp);
+    this.mark(b,'base','#d43c32',null,20,true,'基準地点');
     for(const p of this.items){
       const q=pos(p);
       if(q.x>-40&&q.x<w+40&&q.y>-40&&q.y<h+40)this.mark(q,p.mapSymbol||'other','#0b6b57',p.id,p.selected?19:15,!!p.selected,p.label,p.hasMapSymbol);
