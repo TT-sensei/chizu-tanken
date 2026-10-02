@@ -12,6 +12,7 @@ const state={
   items:[],
   filter:'すべて',
   selected:null,
+  circle:500,
   found:new Set(),
   memo:'',
   facilitiesOpen:true,
@@ -76,7 +77,7 @@ function visibleForMap(v){
 function render(){
   const v=state.items.filter(x=>state.filter==='すべて'||x.group===state.filter);
 
-  map?.set(state.base,visibleForMap(v),{showLabels:false});
+  map?.set(state.base,visibleForMap(v),{showLabels:false,circle:state.circle});
 
   const foundCount=state.items.filter(x=>state.found.has(x.id)).length;
   $('#foundCount').textContent=`見つけた ${foundCount} / ${state.items.length}`;
@@ -205,6 +206,12 @@ function showSuggestions(xs){
     e.append(b);
   }
 }
+
+document.querySelectorAll('[data-circle]').forEach(b=>b.onclick=()=>{
+  state.circle=Number(b.dataset.circle);
+  document.querySelectorAll('[data-circle]').forEach(x=>x.classList.toggle('on',x===b));
+  render();
+});
 
 document.querySelectorAll('#quick button').forEach(b=>b.onclick=()=>{
   $('#q').value=b.textContent;
