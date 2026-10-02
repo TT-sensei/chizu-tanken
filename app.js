@@ -12,7 +12,7 @@ const state={
   items:[],
   filter:'すべて',
   selected:null,
-  circle:500,
+  circle:1000,
   found:new Set(),
   memo:'',
   facilitiesOpen:true,
