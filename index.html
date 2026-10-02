@@ -1,8 +1,124 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b6b57"><title>地図探検</title><link rel="stylesheet" href="style.css"></head><body><header><div><h1>地図探検</h1><p>地域の地図を見て、考えよう</p></div><button id="home" class="sub">トップ</button></header><main>
-<section id="top" class="page active"><div class="hero"><h2>何をする？</h2><div class="entrances"><button data-start="explore">地図で探す<small>地図記号から地域の施設を見つける</small></button></div></div><div class="notice"><b>先生・保護者の方へ</b><p>自宅など個人が特定される場所は、友達に見せたり共有したりしないようにしましょう。入力した振り返りは、この端末内だけに保存されます。</p></div></section>
-<section id="app" class="page"><section class="search"><label for="q">場所を検索</label><div><input id="q" placeholder="学校、駅、公園など" autocomplete="off"><button id="search">検索</button></div><div id="suggest" class="suggest"></div><nav id="quick"><button>学校</button><button>駅</button><button>公園</button><button>市役所</button><button>図書館</button></nav></section>
-<div class="bar"><strong id="baseName"></strong><span id="status" role="status"></span><button id="reload" class="sub">読み直す</button></div>
-<div class="layout"><section class="mapBox"><div id="map"><div id="tiles"></div><svg id="marks"></svg><div class="compass">北<br>↑</div><div class="controls"><button data-m="zin" aria-label="拡大">＋</button><button data-m="zout" aria-label="縮小">−</button></div><button id="reset" class="reset">基準地点にもどる</button><button id="mapExpand" class="mapExpand" aria-expanded="false">地図をひろげる</button></div><p class="legend">● 基準地点　―― 500m円　地図記号を見つけて、タップして確かめよう。　※学校からのまっすぐなきょりです。道を歩くきょりとは違います。</p></section><aside>
-<section id="explore"><div class="panelHead"><h2>周辺の施設 <small id="count"></small></h2><button id="facilityToggle" class="sub panelToggle" aria-expanded="true">一覧をしまう</button></div><div id="facilityBody"><nav id="filters"></nav><div id="list"></div><label class="memo">気づいたこと<textarea id="memo" rows="4"></textarea></label></div></section>
-</aside></div>
-<footer><a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地図：国土地理院 地理院タイル</a> ／ <a href="https://openpoiapi.com/attribution.html" target="_blank">施設情報：OpenPOI API・出典</a><div id="attr"></div></footer></section></main><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b6b57">
+<title>地図探検</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>地図探検</h1>
+    <p>地図を見て、地域を知ろう</p>
+  </div>
+  <button id="home" class="sub">トップ</button>
+</header>
+
+<main>
+<section id="top" class="page active">
+  <div class="hero">
+    <p class="eyebrow">3年生 社会科</p>
+    <h2>地図をひらいて、<br>地域を探検しよう</h2>
+    <p class="heroLead">学校や駅、公園などの場所を決めて、地図記号や周りの施設を見つけてみよう。</p>
+    <button class="startButton" data-start>探検をはじめる</button>
+    <div class="howto">
+      <div><b>1</b><span>場所を決める</span></div>
+      <div><b>2</b><span>地図を見る</span></div>
+      <div><b>3</b><span>見つける</span></div>
+    </div>
+  </div>
+  <div class="notice">
+    <b>先生・保護者の方へ</b>
+    <p>場所を検索するだけで始められます。入力した場所や振り返りは、この端末のブラウザ内に保存されます。自宅など個人が特定される場所の入力・共有には注意してください。</p>
+  </div>
+</section>
+
+<section id="app" class="page">
+  <section class="search">
+    <label for="q">探検する場所</label>
+    <div class="searchRow">
+      <input id="q" placeholder="学校、駅、公園など" autocomplete="off">
+      <button id="search">検索</button>
+    </div>
+    <div id="suggest" class="suggest"></div>
+    <nav id="quick" aria-label="場所の例">
+      <button>学校</button>
+      <button>駅</button>
+      <button>公園</button>
+      <button>市役所</button>
+      <button>図書館</button>
+    </nav>
+  </section>
+
+  <div class="bar">
+    <div>
+      <strong id="baseName"></strong>
+      <span id="status" role="status"></span>
+    </div>
+    <button id="reload" class="sub">読み直す</button>
+  </div>
+
+  <div class="layout">
+    <section class="mapBox">
+      <div id="map">
+        <div id="tiles"></div>
+        <svg id="marks" aria-label="地図上の施設"></svg>
+        <div class="compass">北<br>↑</div>
+        <div class="controls">
+          <button data-m="zin" aria-label="拡大">＋</button>
+          <button data-m="zout" aria-label="縮小">−</button>
+        </div>
+        <button id="reset" class="reset">基準地点にもどる</button>
+        <button id="mapExpand" class="mapExpand" aria-expanded="false">地図をひろげる</button>
+      </div>
+      <p class="legend">地図の記号を見つけて、気になる場所をタップしてみよう。　● 基準地点　―― 500m　※距離は学校からのまっすぐなきょりです。</p>
+    </section>
+
+    <aside>
+      <section class="panel">
+        <div class="panelHead">
+          <div>
+            <h2>探検の記録</h2>
+            <small id="foundCount">見つけた 0 / 0</small>
+          </div>
+          <span class="badgeSummary">バッジ <b id="badgeCount">0 / 4</b></span>
+        </div>
+
+        <div id="filters" class="filters"></div>
+
+        <div class="listHead">
+          <b>周りの施設</b>
+          <button id="facilityToggle" class="sub panelToggle" aria-expanded="true">一覧をしまう</button>
+        </div>
+
+        <div id="facilityBody">
+          <div id="list"></div>
+
+          <section class="badgePanel">
+            <h3>探検バッジ</h3>
+            <div id="badges"></div>
+          </section>
+
+          <label class="memo">
+            <span>気づいたこと</span>
+            <textarea id="memo" rows="4" placeholder="どんな施設が多い？　どんなところに集まっている？"></textarea>
+          </label>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <footer>
+    <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noreferrer">地図：国土地理院 地理院タイル</a>
+    ／
+    <a href="https://openpoiapi.com/attribution.html" target="_blank" rel="noreferrer">施設情報：OpenPOI API・出典</a>
+    <div id="attr"></div>
+  </footer>
+</section>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
